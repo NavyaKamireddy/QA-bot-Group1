@@ -16,7 +16,7 @@ manageable steps.
 2. We chose OpenAI from which we obtain API key. This is used before embedding. It triggers the bot to give responses from chatGPT.
 3. The next big step is training. Training involves feeding the model a database of conversations so it can learn different patterns and apply them when interacting with users.
 4. Once trained, the bot is ready to be integrated into chosen platform. An in depth analysis of the proposed idea are further discussed in coming sections.
-5. 
+
 # SYSTEM SPECIFICATIONS:
 Configuration: MacBook Air, M1Chip, 8GB RAM
 Programming Language: Python
