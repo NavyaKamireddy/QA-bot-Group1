@@ -1,7 +1,8 @@
 # QA-bot-Group1
 
 # PROJECT PROPOSAL:
-Our Task is to build a Q&A Bot over private data that answers questions about the network security course using the open-source alternatives to ChatGPT(OpenAI here) that can be run on local machine. We train the bot using network security lecture slides and network security textbook. The key idea is that once the user asks a question, the bot must be able to retrieve correct answer from lecture slides, textbook or if not available in these, it must get data from other sourcesLLMs (chatGPT here). In addition, to introduce concepts learned in our network security class we must provide traceability of the data.
+Our Task is to build a Q&A Bot over private data that answers questions about the network security course using the open-source alternatives to ChatGPT(OpenAI here) that can be run on local machine. \\
+We train the bot using network security lecture slides and network security textbook. The key idea is that once the user asks a question, the bot must be able to retrieve correct answer from lecture slides, textbook or if not available in these, it must get data from other sourcesLLMs (chatGPT here). In addition, to introduce concepts learned in our network security class we must provide traceability of the data.
 
 # PROPOSED IDEA:
 Building a Q&A bot, though challenging, can be simplified by breaking down the process into
