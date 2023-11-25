@@ -18,7 +18,7 @@ manageable steps.
 4) Software Frameworks and Libraries: For appropriate deep learning framework the necessary libraries and modules imported are os, pdfreader, CharacterTextSplitter, load qa chain OpenAIEmbeddings, FAISS, OpenAI, concurrent.
 5) LLM (Large Language Model): Depending on the complexity of the Q&A tasks, we used pre-trained language models which is langchain.
 
-# SYSTEM SPECIFICATIONS:
+# SYSTEM ARCHITECTURE:
 Below is the system architecture:
 
 ![image](https://github.com/NavyaKamireddy/QA-bot-Group1/assets/146391951/15547197-2ed3-464c-9d85-0398a89e0ebd)
