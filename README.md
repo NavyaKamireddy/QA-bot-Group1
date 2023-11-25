@@ -1,13 +1,8 @@
 # QA-bot-Group1
 
 # PROJECT PROPOSAL:
-Our Task is to build a Q&A Bot over private data that answers questions about the network
-security course using the open-source alternatives to ChatGPT(OpenAI here) that can be run
-on local machine.
-We train the bot using network security lecture slides and network security textbook. The
-key idea is that once the user asks a question, the bot must be able to retrieve correct answer
-from lecture slides, textbook or if not available in these, it must get data from other sourcesLLMs (chatGPT here). In addition, to introduce concepts learned in our network security class
-we must provide traceability of the data.
+Our Task is to build a Q&A Bot over private data that answers questions about the network security course using the open-source alternatives to ChatGPT(OpenAI here) that can be run on local machine. We train the bot using network security lecture slides and network security textbook. 
+The key idea is that once the user asks a question, the bot must be able to retrieve correct answer from lecture slides, textbook or if not available in these, it must get data from other sourcesLLMs (chatGPT here). In addition, to introduce concepts learned in our network security class we must provide traceability of the data.
 
 # PROPOSED IDEA:
 Building a Q&A bot, though challenging, can be simplified by breaking down the process into
@@ -18,13 +13,11 @@ manageable steps.
 4. Once trained, the bot is ready to be integrated into chosen platform. An in depth analysis of the proposed idea are further discussed in coming sections.
 
 # SYSTEM SPECIFICATIONS:
-Configuration: MacBook Air, M1Chip, 8GB RAM
-Programming Language: Python
-Platform:JupyterNotebook(Anaconda)
-Software Frameworks and Libraries: For appropriate deep learning framework the necessary libraries and modules imported are os, pdfreader, CharacterTextSplitter, load qa chain
-OpenAIEmbeddings, FAISS, OpenAI, concurrent.
-LLM (Large Language Model): Depending on the complexity of the Q&A tasks, we used
-pre-trained language models which is langchain.
+1) Configuration: MacBook Air, M1Chip, 8GB RAM
+2) Programming Language: Python
+3) Platform:JupyterNotebook(Anaconda)
+4) Software Frameworks and Libraries: For appropriate deep learning framework the necessary libraries and modules imported are os, pdfreader, CharacterTextSplitter, load qa chain OpenAIEmbeddings, FAISS, OpenAI, concurrent.
+5) LLM (Large Language Model): Depending on the complexity of the Q&A tasks, we used pre-trained language models which is langchain.
 
 # SYSTEM SPECIFICATIONS:
 Below is the system architecture:
