@@ -9,14 +9,30 @@ import os
 import time
 import fitz
 import re
+
+
+import logging
+
+import random
+import openai
+import json
+
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+# Graphsignal: configure
+import graphsignal
+graphsignal.configure(api_key='GRAPHS_SIGNAL_API_KEY', deployment='DEPLOYMENT_NAME')
+
 #creating the environment
 import openai  # Import openai library
-os.environ["OPENAI_API_KEY"] = "API_KEY"
+os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
 
 # Function to extract text from PDF using PyMuPDF
 def extract_text_from_pdf(pdf_path_1):
-    with fitz.open(pdf_path_1) as doc_lec
-   ture:
+    with fitz.open(pdf_path_1) as doc_lecture:
         for page_number in range(doc_lecture.page_count):
             page = doc_lecture[page_number]
             page_text = page.get_text()
@@ -29,19 +45,14 @@ def etracting_text_from_pdf(pdf_path_2):
             pages = docs_textbook[page_numbers]
             page_texts = pages.get_text()
             yield page_numbers + 1, page_texts
-
-
 # Function to extract metadata from document text
 def extract_metadata(text, pattern):
-    match = re.search(pattern,text)
-    return f"{pattern} {match.group(1)}" if match else f"Unknown {pattern}"
-    # Example regular expressions to extract chapter and lecture information
-    lecture_match = re.search(r'Lecture_slides (\d+)', text)
-    chapter_match = re.search(r'chapter_textbook (\d+)', text)
-    lecture_slides = f"Lecture {lecture_match.group(1)}" if lecture_match else "Unknown Lecture"
-    chapter_textbook = f"chapter_textbook {chapter_match.group(1)}" if chapter_match else "Unknown Chapter"
-   
-    return lecture_slides,  chapter_textbook
+    with graphsignal.start_trace('extract_metadata') as span:
+        match = re.search(pattern, text)
+        page_number = match.group(1) if match else "Unknown Page"
+        span.set_data('page_number', page_number)
+        span.set_data('pattern', pattern)
+        return f"{pattern} {page_number}" if match else f"Unknown {pattern}"
 
 def generate_questions(text):
     sentences = text.split('.')
@@ -49,7 +60,7 @@ def generate_questions(text):
     return questions
 #Function to generate an answer from ChatGPT
 def generate_chatgpt_answer(question):
-    openai.api_key = "API_KEY"
+    openai.api_key = "OPENAI_API_KEY"
     prompt = f"Question: {question}\nAnswer:"
     response = openai.Completion.create(
         engine="text-davinci-003",
@@ -59,18 +70,15 @@ def generate_chatgpt_answer(question):
     )
     chatgpt_answer = response.choices[0].text.strip()
     return chatgpt_answer
-
-pdf_path_1 = '.pdf'
-pdf_path_2 = '.pdf'
-
-
+pdf_path_1 = 'LOCAL_PATH.pdf'
+pdf_path_2 = "LOCAL_PATH.pdf"
 try:
     start_time = time.time()
 
     # Extract text from the first PDF using PyMuPDF
-    extracted_text = extract_text_from_pdf(pdf_path_1)
+    extracted_text_1 = extract_text_from_pdf(pdf_path_1)
     # Combine all text from different pages into a single string
-    combined_text = ' '.join(page_text for _, page_text in extracted_text)
+    combined_text_1 = ' '.join(page_text for _, page_text in extracted_text_1)
 
     # Split text into smaller chunks
     text_splitter = CharacterTextSplitter(
@@ -79,57 +87,83 @@ try:
         chunk_overlap=100,
         length_function=len,
     )
-    texts = text_splitter.split_text(combined_text)
+    texts_1 = text_splitter.split_text(combined_text_1)
 
     embeddings = OpenAIEmbeddings()
-    docsearch = FAISS.from_texts(texts, embeddings)
+    docsearch_1 = FAISS.from_texts(texts_1, embeddings)
 
     openai_api_key = os.environ["OPENAI_API_KEY"]
-    os.environ["OPENAI_API_KEY"] = "API_KEY"
-    llm = OpenAI(temperature=0.7, openai_api_key=openai_api_key)
+    os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
+    llm_1 = OpenAI(temperature=0.7, openai_api_key=openai_api_key)
     
-    chain = load_qa_chain(llm, chain_type="stuff")
+    chain_1 = load_qa_chain(llm_1, chain_type="stuff")
 
     user_question = input("Enter your Question: ")
 
-    doc_lecture = docsearch.similarity_search(user_question)
+    doc_lecture = docsearch_1.similarity_search(user_question)
+    with graphsignal.start_trace('run_conversation') as span:
+        span.set_data('user_question', user_question)
+        span.set_data('doc_lecture', doc_lecture)
 
-    answer_from_document = chain.run(input_documents=doc_lecture, question=user_question)
 
+    answer_from_document = chain_1.run(input_documents=doc_lecture, question=user_question)
+    
     if answer_from_document.strip():
-        metadata_1 = extract_metadata(combined_text, r'Lecture_slides (\d+)')
+        with graphsignal.start_trace('extract_metadata') as span:
+            metadata_1 = extract_metadata(combined_text_1)
+            span.set_data('metadata_1', metadata_1)
+
         print(f"Metadata from NS_All_Slides : {metadata_1}")
         print(f"Question: {user_question}")
         print(f"Document Answer from Slides  : {answer_from_document}")
-        print(f"PDF: {doc_lecture[0]}" )
         print(f"PDF: {pdf_path_1}")
         answer_source = "Lecture1-slide, pgno:6"
         print("-" * 50)
 
     # Extract text from the second PDF using PyMuPDF
-    extracted_texts = extract_text_from_pdf(pdf_path_2)
+    extracted_text_2 = extract_text_from_pdf(pdf_path_2)
     # Combine all text from different pages into a single string
-    combined_texts = ' '.join(page_texts for _, page_texts in extracted_texts)
+    combined_text_2 = ' '.join(page_texts for _, page_texts in extracted_text_2)
     # Split text into smaller chunks
-    texts_textbook = text_splitter.split_text(combined_texts)
+    text_splitter = CharacterTextSplitter(
+        separator="\n",
+        chunk_size=3000,
+        chunk_overlap=100,
+        length_function=len,
+    )
+    texts_2 = text_splitter.split_text(combined_text_2)
+    embeddings = OpenAIEmbeddings()
+    docsearch_2 = FAISS.from_texts(texts_2, embeddings)
+    openai_api_key = os.environ["OPENAI_API_KEY"]
+    os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
+    llm_2 = OpenAI(temperature=0.7, openai_api_key=openai_api_key)
+    
+    chain_2 = load_qa_chain(llm_2, chain_type="stuff")
 
-    docs_textbook = docsearch.similarity_search(user_question)
 
-    answer_from_textbook = chain.run(input_documents=docs_textbook, question=user_question)
+
+    docs_textbook = docsearch_2.similarity_search(user_question)
+
+    answer_from_textbook = chain_2.run(input_documents=docs_textbook, question=user_question)
+    with graphsignal.start_trace('run_conversation') as span:
+        span.set_data('user_question', user_question)
+        span.set_data('docs_textbook', docs_textbook)
+
 
     if answer_from_textbook.strip():
-        metadata_2 = extract_metadata(combined_texts, r'chapter_documents (\d+)')
+        with graphsignal.start_trace('extract_metadata') as span:
+            metadata_2 = extract_metadata(combined_text_2)
+            span.set_data('metadata_2', metadata_2)
+
         print(f"Metadata from : {metadata_2}")
         print(f"Question: {user_question}")
         print(f"Document Answer from Networksecuritytextbook Metadata : {answer_from_textbook}")
-        print("-" * 50)
-        print(f"PDF: {docs_textbook[0]}" )
         print(f"PDF: {pdf_path_2}")
         answer_source = "Network Security Textbook"
         print("-" * 50)
         
     openai_api_key = os.environ["OPENAI_API_KEY"]
-    os.environ["OPENAI_API_KEY"] = "API_KEY"
+    os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"
     llm = OpenAI(temperature=0.7, openai_api_key=openai_api_key)
     
     # Display ChatGPT answer even if a document answer is found
@@ -142,7 +176,3 @@ try:
 except Exception as e:
     print(f"Error processing {pdf_path_1} or {pdf_path_2}: {str(e)}")
 
-
-
-
-   
